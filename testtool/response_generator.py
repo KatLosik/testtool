@@ -8,7 +8,7 @@ class ResponseGenerationError(Exception):
     """Raised when response cannot be generated from schema."""
 
 
-def generate_response(schema: dict) -> str | int | float | bool:
+def generate_response(schema: dict) -> str | int | float | bool | dict:
     """
     Generate a mock response value from a schema.
 
@@ -34,6 +34,8 @@ def generate_response(schema: dict) -> str | int | float | bool:
         return _generate_number()
     elif schema_type == "boolean":
         return _generate_boolean()
+    elif schema_type == "object":
+        return _generate_object(schema)
     else:
         raise ResponseGenerationError(f"Unsupported schema type: {schema_type}")
 
@@ -57,3 +59,17 @@ def _generate_number() -> float:
 def _generate_boolean() -> bool:
     """Generate a random boolean value."""
     return random.choice([True, False])
+
+
+def _generate_object(schema: dict) -> dict:
+    """Generate a random object value from object schema."""
+    if "properties" not in schema:
+        raise ResponseGenerationError("Object schema must define 'properties' field")
+
+    properties = schema["properties"]
+    result = {}
+
+    for prop_name, prop_schema in properties.items():
+        result[prop_name] = generate_response(prop_schema)
+
+    return result

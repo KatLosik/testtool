@@ -8,7 +8,7 @@ class ResponseGenerationError(Exception):
     """Raised when response cannot be generated from schema."""
 
 
-def generate_response(schema: dict) -> str | int | float | bool | dict:
+def generate_response(schema: dict) -> str | int | float | bool | dict | list:
     """
     Generate a mock response value from a schema.
 
@@ -36,6 +36,8 @@ def generate_response(schema: dict) -> str | int | float | bool | dict:
         return _generate_boolean()
     elif schema_type == "object":
         return _generate_object(schema)
+    elif schema_type == "array":
+        return _generate_array(schema)
     else:
         raise ResponseGenerationError(f"Unsupported schema type: {schema_type}")
 
@@ -71,5 +73,19 @@ def _generate_object(schema: dict) -> dict:
 
     for prop_name, prop_schema in properties.items():
         result[prop_name] = generate_response(prop_schema)
+
+    return result
+
+
+def _generate_array(schema: dict) -> list:
+    """Generate a random array value from array schema."""
+    if "items" not in schema:
+        raise ResponseGenerationError("Array schema must define 'items' field")
+
+    items_schema = schema["items"]
+    result = []
+
+    for _ in range(3):
+        result.append(generate_response(items_schema))
 
     return result
